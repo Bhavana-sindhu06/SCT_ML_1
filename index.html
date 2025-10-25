@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Predictor - ML Dashboard</title>
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-primary-hover: #2563eb;
+            --color-primary-light: rgba(59, 130, 246, 0.1);
+            --color-success: #10b981;
+            --color-success-light: rgba(16, 185, 129, 0.1);
+            --color-background: #f8fafc;
+            --color-surface: #ffffff;
+            --color-text: #1e293b;
+            --color-text-secondary: #64748b;
+            --color-border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            --radius-base: 12px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            animation: scaleIn 0.5s ease-out backwards;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--color-primary-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--color-surface);
+            color: var(--color-text);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, var(--color-success-light) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 2px solid var(--color-success);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .result-box.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .result-label {
+            font-size: 0.95rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-success);
+            animation: countUp 0.8s ease-out;
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            background: var(--color-background);
+            border-radius: var(--radius-base);
+            padding: 1rem;
+            margin-top: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid var(--color-border);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-section {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            animation: scaleIn 0.5s ease-out 0.3s backwards;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--color-background);
+            border-radius: var(--radius-base);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
+            background: var(--color-primary-light);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .feature-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+            color: var(--color-text);
+        }
+
+        .feature-content p {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Bar chart visualization */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 100%;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--color-primary), var(--color-primary-hover));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.4s ease;
+            animation: growUp 0.8s ease-out backwards;
+            min-width: 40px;
+        }
+
+        @keyframes growUp {
+            from {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            to {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        .bar:hover {
+            transform: scaleY(1.05);
+            filter: brightness(1.1);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 House Price Predictor</h1>
+            <p>Advanced Machine Learning Prediction Dashboard</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Input Form Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h2 class="card-title">Property Details</h2>
+                </div>
+
+                <form id="predictionForm">
+                    <div class="form-group">
+                        <label class="form-label" for="sqft">Living Area (Square Feet)</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="sqft" 
+                                class="form-input" 
+                                placeholder="Enter square footage"
+                                value="2100"
+                                min="500"
+                                max="10000"
+                                required
+                            >
+                            <span class="input-unit">sq ft</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="bedrooms">Number of Bedrooms</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="bedrooms" 
+                                class="form-input" 
+                                placeholder="Enter number of bedrooms"
+                                value="4"
+                                min="1"
+                                max="10"
+                                required
+                            >
+                            <span class="input-unit">rooms</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="bathrooms">Number of Bathrooms</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="number" 
+                                id="bathrooms" 
+                                class="form-input" 
+                                placeholder="Enter number of bathrooms"
+                                value="2"
+                                min="1"
+                                max="8"
+                                step="0.5"
+                                required
+                            >
+                            <span class="input-unit">baths</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <span>🔮</span>
+                        <span>Predict Price</span>
+                    </button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem; color: var(--color-text-secondary);">Analyzing property...</p>
+                </div>
+
+                <div class="result-box" id="resultBox">
+                    <div class="result-label">Predicted House Price</div>
+                    <div class="result-value" id="predictedPrice">₹0</div>
+                </div>
+            </div>
+
+            <!-- Model Performance Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <h2 class="card-title">Model Performance</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">R² Score</div>
+                        <div class="stat-value" id="r2Score">0.8543</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">RMSE</div>
+                        <div class="stat-value" id="rmseValue">₹35.3L</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="bar-chart" id="featureImportance">
+                        <div class="bar" style="height: 85%; animation-delay: 0.1s;">
+                            <div class="bar-value">85%</div>
+                            <div class="bar-label">Sq Ft</div>
+                        </div>
+                        <div class="bar" style="height: 45%; animation-delay: 0.2s;">
+                            <div class="bar-value">45%</div>
+                            <div class="bar-label">Bedrooms</div>
+                        </div>
+                        <div class="bar" style="height: 35%; animation-delay: 0.3s;">
+                            <div class="bar-value">35%</div>
+                            <div class="bar-label">Bathrooms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="info-section">
+            <div class="card-header">
+                <div class="card-icon">⚡</div>
+                <h2 class="card-title">Key Features</h2>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-content">
+                        <h3>ML-Powered</h3>
+                        <p>Linear regression model trained on real estate data</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-content">
+                        <h3>Instant Results</h3>
+                        <p>Get accurate price predictions in milliseconds</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-content">
+                        <h3>Data Visualization</h3>
+                        <p>Interactive charts showing feature importance</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-content">
+                        <h3>High Accuracy</h3>
+                        <p>R² score of 0.85+ demonstrates reliable predictions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Model coefficients (these would come from your Python model)
+        // You can update these values from your actual trained model
+        const USD_TO_INR = 83; // Current conversion rate (update as needed)
+        
+        const MODEL = {
+            intercept: -253673.5 * USD_TO_INR,
+            coefficients: {
+                sqft: 109.25 * USD_TO_INR,        // Per square foot
+                bedrooms: 5420.33 * USD_TO_INR,   // Per bedroom
+                bathrooms: 8150.75 * USD_TO_INR   // Per bathroom
+            },
+            r2: 0.8543,
+            rmse: 42500 * USD_TO_INR
+        };
+
+        // Form submission handler
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const sqft = parseFloat(document.getElementById('sqft').value);
+            const bedrooms = parseFloat(document.getElementById('bedrooms').value);
+            const bathrooms = parseFloat(document.getElementById('bathrooms').value);
+
+            // Show loading animation
+            const loadingEl = document.getElementById('loading');
+            const resultBox = document.getElementById('resultBox');
+            
+            loadingEl.classList.add('show');
+            resultBox.classList.remove('show');
+
+            // Simulate API call delay for better UX
+            setTimeout(() => {
+                // Calculate prediction using linear regression formula
+                const prediction = MODEL.intercept + 
+                    (sqft * MODEL.coefficients.sqft) +
+                    (bedrooms * MODEL.coefficients.bedrooms) +
+                    (bathrooms * MODEL.coefficients.bathrooms);
+
+                // Format and display result
+                const formattedPrice = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(prediction);
+
+                document.getElementById('predictedPrice').textContent = formattedPrice;
+
+                // Hide loading and show result with animation
+                loadingEl.classList.remove('show');
+                resultBox.classList.add('show');
+
+                // Add celebratory effect
+                animateValue('predictedPrice', 0, prediction, 800);
+            }, 1200);
+        });
+
+        // Animate number counting up
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                
+                const formatted = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(current);
+                
+                element.textContent = formatted;
+            }, 16);
+        }
+
+        // Update performance metrics with animation on page load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('r2Score').textContent = MODEL.r2.toFixed(4);
+                
+                const rmseFormatted = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                    notation: 'compact',
+                    compactDisplay: 'short'
+                }).format(MODEL.rmse);
+                
+                document.getElementById('rmseValue').textContent = rmseFormatted;
+            }, 500);
+        });
+
+        // Add input validation with visual feedback
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value && this.checkValidity()) {
+                    this.style.borderColor = 'var(--color-success)';
+                } else if (this.value) {
+                    this.style.borderColor = '#ef4444';
+                } else {
+                    this.style.borderColor = 'var(--color-border)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
